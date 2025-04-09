@@ -7,7 +7,7 @@ alias reb='source ~/.bashrc && echo -e "[RELOAD] .bashrc"'
 alias elias='code ~/.bash_aliases && exit'
 alias rcdit='code ~/.bashrc && exit'
 
-# Linux general commands
+# Linux general commandsgap
 
 check_connectivity() {
 	test_ip="8.8.8.8"
@@ -20,8 +20,8 @@ check_connectivity() {
 	fi
 }
 
-alias kaf='kubectl apply -f'
 alias c='clear'
+alias p='python'
 alias h='history'
 alias g='grep'
 alias bx='bash -x'
@@ -63,6 +63,8 @@ alias gmt='go mod tidy'
 alias jcli='java -jar /home/brian/Documents/os-scripts/jenkins-cli.jar -auth $JENKINS_USER_TOKEN_8885 -s http://localhost:8885/'
 alias infile='grep -nr'
 alias sopd='sopd'
+alias otp='python ~/Documents/os-scripts/generate_otp.py; sleep 30; exit'
+alias genpass='date +%s | sha256sum | base64 | head -c 10 | xclip -selection clipboard'
 alias t='task'
 # alias ='git config pull.rebase false'
 
@@ -75,9 +77,19 @@ sopf(){
 sopd(){
 	sops -d "$1" | jc --ini | jq 'walk(if type == "string" then @base64d else . end)'
 }
-secd(){
-	cat $1 | yq '.data' | jc --ini | jq 'walk(if type == "string" then @base64d else . end)'
+# secd(){
+# 	cat $1 | yq '.data' | jc --ini | jq 'walk(if type == "string" then @base64d else . end)'
+# }
+secd() {
+    if [ -z "$1" ]; then
+        echo "Usage: secd <input_file>"
+        return 1
+    fi
+
+    cat "$1" | yq '.data' | jc --ini | jq 'walk(if type == "string" then @base64d else . end)' | jc --yaml
 }
+
+
 
 cld() {
 	# Get the last downloaded item in the downloads directory
@@ -117,6 +129,7 @@ fuzz() {
 	fi
 	exit 0
 }
+
 
 fuzzfunc() {
     local dirs="$2"
@@ -169,9 +182,21 @@ fuzzwref(){
 	fi
 }
 
+# recp(){
+# 	if [ "$1" == refresh ]; then
+# 		echo "Refreshing local repository list..."
+# 		/home/brian/Documents/os-scripts/refresh_repos.sh
+# 	else
+# 		fuzz code Documents/repos
+# 		# exit 1
+# 	fi
+# }
+
+alias repc="cat /home/brian/.repolist | fzf | tr -d '\n' | xclip -selection clipboard"
 # Create an alias for the code_dirs function
 # alias repos="fuzz code Documents/repos/"
 alias repos="fuzzwref"
+alias repl="fuzzwref"
 # alias docs="fuzz nautilus Documents/"
 
 
@@ -301,6 +326,8 @@ alias envc='open_code_dir spintly-environment-configs/'
 alias jenc='open_code_dir spintly-jenkins-configs/'
 alias drec='open_code_dir disaster-recovery-spintly/'
 
+alias kpfg='kubectl port-forward -n monitoring deployment/grafana 3000 &'
+alias kaf='kubectl apply -f'
 # Jenkins Commands
 
 jenkinslint() {
@@ -325,3 +352,8 @@ desktop() {
 }
 
 alias desktop='desktop'
+
+# Auto completion for aliases - Do not touch
+
+complete -F _complete_alias "${!BASH_ALIASES[@]}"
+
